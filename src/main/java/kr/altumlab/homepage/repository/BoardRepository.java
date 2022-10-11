@@ -1,12 +1,12 @@
 package kr.altumlab.homepage.repository;
 
-import io.swagger.annotations.ApiParam;
-import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import kr.altumlab.homepage.domain.Board;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import org.springframework.data.rest.core.annotation.RestResource;
@@ -30,4 +30,23 @@ public interface BoardRepository extends PagingAndSortingRepository<Board, Long>
 
     @RestResource(path = "/contents")
     List<Board> findBoardByTitleContainsOrContentsContains(String title, String contents);
+
+    @Query(value = """
+    select * from Board b limit 1 
+    """, nativeQuery = true)
+    @RestResource(path = "/getBoard")
+    Object[] getBoard(long id);
+
+    @Query(
+            value = "select count(*) from board",
+            nativeQuery = true
+    )
+    @RestResource(path = "/cntBoard")
+    int getBoardCount();
+
+    @Modifying
+    @Query("delete from Board b where b.title = ?1 and b.contents = ?2")
+    @RestResource(path="/deleteBoard")
+    void delete(String title, String contents);
+
 }
